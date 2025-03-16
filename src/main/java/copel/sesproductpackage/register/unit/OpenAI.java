@@ -178,7 +178,6 @@ public class OpenAI implements Transformer {
 
         String content = prompt.replaceAll("[\\p{C}\\p{P}\"]", "");
         String jsonBody = "{\"model\": \"" + this.completionModel + "\", \"messages\": [{\"role\": \"user\", \"content\": \"" + content + "\"}], \"temperature\": " + temperature.toString() + "}";
-        System.out.println(jsonBody);
         try (OutputStream os = conn.getOutputStream()) {
             byte[] input = jsonBody.getBytes(StandardCharsets.UTF_8);
             os.write(input, 0, input.length);

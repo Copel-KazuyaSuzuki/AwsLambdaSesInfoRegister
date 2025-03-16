@@ -1,5 +1,6 @@
 package copel.sesproductpackage.register.unit.aws;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Date;
@@ -10,6 +11,7 @@ import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
@@ -84,9 +86,13 @@ public class S3 {
                 .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
                 .build();
 
+        // ObjectMetadataを設定
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentLength(this.data.length);
+
         // PutObjectRequestでbyte[]をアップロード
         PutObjectRequest request = new PutObjectRequest(this.bucketName, this.bucketFilePath, 
-            new java.io.ByteArrayInputStream(this.data), null);
+            new ByteArrayInputStream(this.data), metadata);
     
         // アップロード
         s3Client.putObject(request);
