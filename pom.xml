@@ -87,11 +87,11 @@
 	</dependency>
 
     <!-- PostgreSQL JDBC ドライバ -->
-    <dependency>
-        <groupId>org.postgresql</groupId>
-        <artifactId>postgresql</artifactId>
-        <version>42.2.5</version>
-    </dependency>
+	<dependency>
+	    <groupId>org.postgresql</groupId>
+	    <artifactId>postgresql</artifactId>
+	    <version>42.7.5</version>
+	</dependency>
   </dependencies>
 
     <build>
