@@ -52,7 +52,7 @@
 	    <scope>provided</scope>
 	</dependency>
 
-    <!-- Apache POI (Excelファイル処理) -->
+    <!-- Apache POI -->
     <dependency>
         <groupId>org.apache.poi</groupId>
         <artifactId>poi-ooxml</artifactId>
@@ -64,6 +64,13 @@
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-compress</artifactId>
         <version>1.24.0</version>
+    </dependency>
+
+    <!-- Apache POI(.doc) -->
+    <dependency>
+        <groupId>org.apache.poi</groupId>
+        <artifactId>poi-scratchpad</artifactId>
+        <version>5.2.3</version>
     </dependency>
 
     <!-- Apache PDFBox (PDF解析ライブラリ) -->
