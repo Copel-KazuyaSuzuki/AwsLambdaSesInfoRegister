@@ -253,7 +253,7 @@ public class SES_AI_T_PERSONLot implements Iterable<SES_AI_T_PERSON> {
     public void selectByRegisterDateAfter(final Connection connection, final OriginalDateTime fromDate) throws SQLException {
         // 検索条件を追加する
         PreparedStatement preparedStatement = connection.prepareStatement(SELECT_SQL_BY_REGISTER_DATE);
-        preparedStatement.setString(1, fromDate != null ? fromDate.toString() : new OriginalDateTime().toString());
+        preparedStatement.setTimestamp(1, fromDate != null ? fromDate.toTimestamp() : new OriginalDateTime().toTimestamp());
 
         // 検索を実行する
         this.entityLot = new ArrayList<SES_AI_T_PERSON>();
