@@ -37,7 +37,7 @@ public class SES_AI_T_PERSONLot implements Iterable<SES_AI_T_PERSON> {
     /**
      * 検索SQL(指定時間以降検索).
      */
-    private final static String SELECT_SQL_BY_REGISTER_DATE = "SELECT person_id, from_group, from_id, from_name, raw_content, file_id, vector_data, register_date, register_user, ttl FROM SES_AI_T_PERSON register_date >= ?";
+    private final static String SELECT_SQL_BY_REGISTER_DATE = "SELECT person_id, from_group, from_id, from_name, raw_content, file_id, vector_data, register_date, register_user, ttl FROM SES_AI_T_PERSON WHERE register_date >= ?";
 
     /**
      * SES_AI_T_PERSONを複数持つLot.
