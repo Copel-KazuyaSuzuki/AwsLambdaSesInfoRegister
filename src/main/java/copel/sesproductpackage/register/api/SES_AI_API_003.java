@@ -244,6 +244,8 @@ public class SES_AI_API_003 extends ApiBase {
                     // UPDATE処理
                 	targetEntity.updateByPk(connection);
                 	log.info("[Invoke ID: {}] SES_AI_T_PERSONテーブルを更新し、要員情報とスキルシートの紐づけに成功しました。", this.invokeId);
+                } else {
+                	log.info("[Invoke ID: {}] 紐づけられるレコードが見つからない、または絞り込めないため、紐づけ処理は行いませんでした", this.invokeId);
                 }
                 connection.commit();
             } else {
