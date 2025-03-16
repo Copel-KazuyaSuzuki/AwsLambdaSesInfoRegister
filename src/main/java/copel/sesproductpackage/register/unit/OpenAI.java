@@ -34,7 +34,7 @@ public class OpenAI implements Transformer {
     /**
      * OpenAIの質問応答を処理するモデル名.
      */
-    private static final String COMPLETION_MODEL_DEFAULT = "gpt-3.5 turbo";
+    private static final String COMPLETION_MODEL_DEFAULT = "gpt-3.5-turbo";
     /**
      * OpenAIの質問応答を処理する際のtemperatureパラメータのデフォルト値.
      */

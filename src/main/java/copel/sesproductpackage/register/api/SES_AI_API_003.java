@@ -40,6 +40,10 @@ public class SES_AI_API_003 extends ApiBase {
      * スキルシート情報(SES_AI_T_SKILLSHEET)テーブルでの一致率判断基準値のデフォルト値(80%).
      */
     private final static Double SES_AI_T_SKILLSHEET_SIMILARITY_THRESHOLD_DEFAULT = 0.8;
+    /**
+     * OpenAIの質問応答を処理するモデル名のデフォルト値.
+     */
+    private static final String OPEN_AI_COMPLETION_MODEL_DEFAULT = "gpt-3.5-turbo";
 
     // ================================================
     // 環境変数
@@ -56,6 +60,10 @@ public class SES_AI_API_003 extends ApiBase {
      * OpenAIのAPIキー.
      */
     private static String OPEN_AI_API_KEY;
+    /**
+     * OpenAIの文章生成モデル.
+     */
+    private static String OPEN_AI_COMPLETION_MODEL;
     /**
      * AWSアクセスキー.
      */
@@ -80,6 +88,11 @@ public class SES_AI_API_003 extends ApiBase {
             OPEN_AI_API_KEY = System.getenv("OPEN_AI_API_KEY");
             if (OPEN_AI_API_KEY == null) {
             	log.warn("OPEN_AI_API_KEY が設定されていません。APIの呼び出しができません。");
+            }
+            OPEN_AI_COMPLETION_MODEL = System.getenv("OPEN_AI_COMPLETION_MODEL");
+            if (OPEN_AI_COMPLETION_MODEL == null) {
+            	OPEN_AI_COMPLETION_MODEL = OPEN_AI_COMPLETION_MODEL_DEFAULT;
+            	log.warn("OPEN_AI_COMPLETION_MODEL が設定されていません。" + OPEN_AI_COMPLETION_MODEL_DEFAULT + "を使用します。");
             }
             AWS_ACCESS_KEY_ID = System.getenv("AWS_ACCESS_KEY_ID");
             if (AWS_ACCESS_KEY_ID == null) {
@@ -180,7 +193,7 @@ public class SES_AI_API_003 extends ApiBase {
             // SES_AI_T_SKILLSHEETテーブル内にrawContentが類似するレコードが存在しなければINSERTする
             if (SES_AI_T_SKILLSHEET.uniqueCheck(connection, SES_AI_T_SKILLSHEET_SIMILARITY_THRESHOLD)) {
                 // スキルシートの内容を要約
-                Transformer transformer = new OpenAI(OPEN_AI_API_KEY);
+                Transformer transformer = new OpenAI(OPEN_AI_API_KEY, OPEN_AI_COMPLETION_MODEL);
                 try {
                     skillSheet.generateSummary(transformer);
                 } catch (RuntimeException e) {
