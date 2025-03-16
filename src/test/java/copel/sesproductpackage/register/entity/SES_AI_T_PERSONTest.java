@@ -71,10 +71,10 @@ class SES_AI_T_PERSONTest {
         when(preparedStatementMock.executeUpdate()).thenReturn(1);
 
         // updateメソッドの呼び出し
-        int result = person.update(connectionMock, "key");
+        boolean result = person.updateByPk(connectionMock);
 
-        // 結果が1であることを確認
-        assertEquals(1, result);
+        // 結果が成功であることを確認
+        assertEquals(true, result);
         // preparedStatementの呼び出しを確認
         verify(connectionMock).prepareStatement(anyString());
     }

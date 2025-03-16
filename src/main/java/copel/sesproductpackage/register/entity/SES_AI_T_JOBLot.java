@@ -25,15 +25,15 @@ public class SES_AI_T_JOBLot implements Iterable<SES_AI_T_JOB> {
     /**
      * ベクトル検索SQL.
      */
-    private final static String RETRIEVE_SQL = "SELECT from_group, from_id, from_name, raw_content, register_date, register_user, ttl, vector_data <=> ?::vector AS distance FROM SES_AI_T_JOB ORDER BY distance LIMIT ?";
+    private final static String RETRIEVE_SQL = "SELECT job_id, from_group, from_id, from_name, raw_content, register_date, register_user, ttl, vector_data <=> ?::vector AS distance FROM SES_AI_T_JOB ORDER BY distance LIMIT ?";
     /**
      * 全文検索SQL.
      */
-    private final static String SELECT_LIKE_SQL = "SELECT from_group, from_id, from_name, raw_content, vector_data, register_date, register_user, ttl FROM SES_AI_T_JOB WHERE raw_content LIKE ?";
+    private final static String SELECT_LIKE_SQL = "SELECT job_id, from_group, from_id, from_name, raw_content, vector_data, register_date, register_user, ttl FROM SES_AI_T_JOB WHERE raw_content LIKE ?";
     /**
      * 検索SQL.
      */
-    private final static String SELECT_SQL = "SELECT from_group, from_id, from_name, raw_content, vector_data, register_date, register_user, ttl FROM SES_AI_T_JOB WHERE ";
+    private final static String SELECT_SQL = "SELECT job_id, from_group, from_id, from_name, raw_content, vector_data, register_date, register_user, ttl FROM SES_AI_T_JOB WHERE ";
 
     /**
      * SES_AI_T_JOBを複数持つLot.
@@ -59,11 +59,11 @@ public class SES_AI_T_JOBLot implements Iterable<SES_AI_T_JOB> {
         PreparedStatement preparedStatement = connection.prepareStatement(RETRIEVE_SQL);
         preparedStatement.setString(1, query == null ? null : query.toString());
         preparedStatement.setInt(2, limit);
-        System.out.println("[DEBUG] " + preparedStatement.toString());
         ResultSet resultSet = preparedStatement.executeQuery();
         this.entityLot = new ArrayList<SES_AI_T_JOB>();
         while (resultSet.next()) {
             SES_AI_T_JOB SES_AI_T_JOB = new SES_AI_T_JOB();
+            SES_AI_T_JOB.setJobId(resultSet.getString("job_id"));
             SES_AI_T_JOB.setFromGroup(resultSet.getString("from_group"));
             SES_AI_T_JOB.setFromId(resultSet.getString("from_id"));
             SES_AI_T_JOB.setFromName(resultSet.getString("from_name"));
@@ -87,10 +87,10 @@ public class SES_AI_T_JOBLot implements Iterable<SES_AI_T_JOB> {
         this.entityLot = new ArrayList<SES_AI_T_JOB>();
         PreparedStatement preparedStatement = connection.prepareStatement(SELECT_LIKE_SQL);
         preparedStatement.setString(1, "%" + query + "%"); // ワイルドカードをつける
-        System.out.println("[DEBUG] " + preparedStatement.toString());
         ResultSet resultSet = preparedStatement.executeQuery();
         while (resultSet.next()) {
             SES_AI_T_JOB SES_AI_T_JOB = new SES_AI_T_JOB();
+            SES_AI_T_JOB.setJobId(resultSet.getString("job_id"));
             SES_AI_T_JOB.setFromGroup(resultSet.getString("from_group"));
             SES_AI_T_JOB.setFromId(resultSet.getString("from_id"));
             SES_AI_T_JOB.setFromName(resultSet.getString("from_name"));
@@ -128,13 +128,13 @@ public class SES_AI_T_JOBLot implements Iterable<SES_AI_T_JOB> {
                 }
             }
         }
-        System.out.println("[DEBUG] " + preparedStatement.toString());
 
         // 検索を実行する
         this.entityLot = new ArrayList<SES_AI_T_JOB>();
         ResultSet resultSet = preparedStatement.executeQuery();
         while (resultSet.next()) {
             SES_AI_T_JOB SES_AI_T_JOB = new SES_AI_T_JOB();
+            SES_AI_T_JOB.setJobId(resultSet.getString("job_id"));
             SES_AI_T_JOB.setFromGroup(resultSet.getString("from_group"));
             SES_AI_T_JOB.setFromId(resultSet.getString("from_id"));
             SES_AI_T_JOB.setFromName(resultSet.getString("from_name"));
@@ -172,13 +172,13 @@ public class SES_AI_T_JOBLot implements Iterable<SES_AI_T_JOB> {
             preparedStatement.setString(i, andQuery.get(columnName));
             i++;
         }
-        System.out.println("[DEBUG] " + preparedStatement.toString());
 
         // 検索を実行する
         this.entityLot = new ArrayList<SES_AI_T_JOB>();
         ResultSet resultSet = preparedStatement.executeQuery();
         while (resultSet.next()) {
             SES_AI_T_JOB SES_AI_T_JOB = new SES_AI_T_JOB();
+            SES_AI_T_JOB.setJobId(resultSet.getString("job_id"));
             SES_AI_T_JOB.setFromGroup(resultSet.getString("from_group"));
             SES_AI_T_JOB.setFromId(resultSet.getString("from_id"));
             SES_AI_T_JOB.setFromName(resultSet.getString("from_name"));
@@ -216,13 +216,13 @@ public class SES_AI_T_JOBLot implements Iterable<SES_AI_T_JOB> {
             preparedStatement.setString(i, orQuery.get(columnName));
             i++;
         }
-        System.out.println("[DEBUG] " + preparedStatement.toString());
 
         // 検索を実行する
         this.entityLot = new ArrayList<SES_AI_T_JOB>();
         ResultSet resultSet = preparedStatement.executeQuery();
         while (resultSet.next()) {
             SES_AI_T_JOB SES_AI_T_JOB = new SES_AI_T_JOB();
+            SES_AI_T_JOB.setJobId(resultSet.getString("job_id"));
             SES_AI_T_JOB.setFromGroup(resultSet.getString("from_group"));
             SES_AI_T_JOB.setFromId(resultSet.getString("from_id"));
             SES_AI_T_JOB.setFromName(resultSet.getString("from_name"));

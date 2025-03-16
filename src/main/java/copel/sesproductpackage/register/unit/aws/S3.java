@@ -4,6 +4,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Date;
 
+import com.amazonaws.AmazonServiceException;
+import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
@@ -62,8 +64,11 @@ public class S3 {
 
     /**
      * このオブジェクトに持つdataをS3に保存します.
+     *
+     * @throws SdkClientException
+     * @throws AmazonServiceException
      */
-    public void save() {
+    public void save() throws SdkClientException, AmazonServiceException {
         // バケット名かファイルパスが空であれば処理を終了する
         if (this.bucketName == null || this.bucketFilePath == null || this.data == null) {
             System.out.println("S3にファイルを保存しようとしましたが、バケット名、ファイルパス、データのいずれかがNULLであるため保存を中止しました。");

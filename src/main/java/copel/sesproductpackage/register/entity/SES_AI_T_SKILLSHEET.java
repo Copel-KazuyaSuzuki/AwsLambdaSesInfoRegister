@@ -94,7 +94,6 @@ public class SES_AI_T_SKILLSHEET {
         preparedStatement.setTimestamp(9, this.registerDate == null ? null : this.registerDate.toTimestamp());
         preparedStatement.setString(10, this.registerUser);
         preparedStatement.setTimestamp(11, this.ttl == null ? null : this.ttl.toTimestamp());
-        System.out.println("[DEBUG] " + preparedStatement.toString());
         return preparedStatement.executeUpdate();
     }
 
@@ -130,7 +129,6 @@ public class SES_AI_T_SKILLSHEET {
         preparedStatement.setString(1, this.skillSheet == null ? null : this.skillSheet.getFileContent());
         preparedStatement.setString(2, this.skillSheet == null ? null : this.skillSheet.getFileContent());
         preparedStatement.setDouble(3, similarityThreshold);
-        System.out.println("[DEBUG] " + preparedStatement.toString());
         ResultSet resultSet = preparedStatement.executeQuery();
         resultSet.next();
         return resultSet.getInt(1) < 1;

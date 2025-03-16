@@ -13,6 +13,7 @@ import copel.sesproductpackage.register.api.RequestObject;
 import copel.sesproductpackage.register.api.SES_AI_API_001;
 import copel.sesproductpackage.register.api.SES_AI_API_002;
 import copel.sesproductpackage.register.api.SES_AI_API_003;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 【SES AIアシスタント】
@@ -22,6 +23,7 @@ import copel.sesproductpackage.register.api.SES_AI_API_003;
  * @author 鈴木一矢
  *
  */
+@Slf4j
 public class LambdaHandler implements RequestHandler<SQSEvent, String> {
     // =====================================
     // 環境変数
@@ -36,63 +38,63 @@ public class LambdaHandler implements RequestHandler<SQSEvent, String> {
 
         // (1) 開始ログを出力する（JSONに異常があれば処理終了）
         try {
-            context.getLogger().log("SQSイベントを受信: " + objectMapper.writeValueAsString(event));
+        	log.info("[Invoke ID: {}] SQSイベントを受信: {}", context.getAwsRequestId(), objectMapper.writeValueAsString(event));
         } catch (JsonProcessingException e) {
-            context.getLogger().log("JSON変換エラーのため、処理を終了します。");
-            context.getLogger().log(e.getMessage());
+        	log.error("[Invoke ID: {}] JSON変換エラーのため、処理を終了します。", context.getAwsRequestId());
+        	e.printStackTrace();
             return null;
         }
 
         // (2) SQS内の各メッセージごとに処理を実施する
         // SQSの入力チェック
         if (event.getRecords() == null || event.getRecords().size() < 1) {
-            context.getLogger().log("レコードが存在しないSQSを受信しました。処理を終了します。");
+        	log.info("[Invoke ID: {}] レコードが存在しないSQSを受信しました。処理を終了します。", context.getAwsRequestId());
             return "process failed.";
         }
 
         // 各レコードに対して処理を行う
         for (final SQSMessage message : event.getRecords()) {
             RequestObject requestObject = new RequestObject(message.getBody());
-            context.getLogger().log("リクエストボディ：\n" + requestObject.toString());
+        	log.debug("[Invoke ID: {}] リクエストボディ：{}", context.getAwsRequestId(), requestObject.toString());
             // リクエストボディが正常データであれば、処理を行う
             if (requestObject.isValid()) {
-                context.getLogger().log("リクエスト種別：" + requestObject.getRequestType().name());
+            	log.info("[Invoke ID: {}] リクエスト種別：{}", context.getAwsRequestId(), requestObject.getRequestType().name());
                 // リクエスト内容に応じてAPIを呼び出す
                 if (requestObject.isスキルシート()) {
                     try {
-                        context.getLogger().log("スキルシートをベクトルDBに登録します");
+                    	log.info("[Invoke ID: {}] スキルシートをベクトルDBに登録します。", context.getAwsRequestId());
                         requestObject.downloadFileData(LINE_CHANNEL_ACCESS_TOKEN);
-                        SES_AI_API_003 SES_AI_API_003 = new SES_AI_API_003(requestObject);
+                        SES_AI_API_003 SES_AI_API_003 = new SES_AI_API_003(requestObject, context.getAwsRequestId());
                         SES_AI_API_003.skillSheetRegister("AWS Lambda SQS Event");
-                        context.getLogger().log(SES_AI_API_003.toString());
+                        log.info(SES_AI_API_003.toString());
                     } catch (IOException | InterruptedException e) {
-                        context.getLogger().log("スキルシートのDLに失敗しました。処理をスキップします。");
+                    	log.info("[Invoke ID: {}] スキルシートのDLに失敗しました。処理をスキップします。", context.getAwsRequestId());
                     }
                     break;
                 }
                 if (requestObject.is案件情報()) {
-                    context.getLogger().log("案件情報をベクトルDBに登録します");
-                    SES_AI_API_002 SES_AI_API_002 = new SES_AI_API_002(requestObject);
+                	log.info("[Invoke ID: {}] 案件情報をベクトルDBに登録します。", context.getAwsRequestId());
+                    SES_AI_API_002 SES_AI_API_002 = new SES_AI_API_002(requestObject, context.getAwsRequestId());
                     SES_AI_API_002.jobRegister("AWS Lambda SQS Event");
-                    context.getLogger().log(SES_AI_API_002.toString());
+                    log.info(SES_AI_API_002.toString());
                     break;
                 } else if (requestObject.is要員情報()) {
-                    context.getLogger().log("要員情報をベクトルDBに登録します");
-                    SES_AI_API_001 SES_AI_API_001 = new SES_AI_API_001(requestObject);
+                	log.info("[Invoke ID: {}] 要員情報をベクトルDBに登録します。", context.getAwsRequestId());
+                    SES_AI_API_001 SES_AI_API_001 = new SES_AI_API_001(requestObject, context.getAwsRequestId());
                     SES_AI_API_001.personRegister("AWS Lambda SQS Event");
-                    context.getLogger().log(SES_AI_API_001.toString());
+                    log.info(SES_AI_API_001.toString());
                     break;
                 } else {
-                    context.getLogger().log("無関係な情報を取得しました。DBへの登録は行わず、処理をスキップします。");
+                	log.info("[Invoke ID: {}] 無関係な情報を取得しました。DBへの登録は行わず、処理をスキップします。", context.getAwsRequestId());
                     break;
                 }
             } else {
-            	context.getLogger().log("リクエストボディが不正のため、処理をスキップします。");
+            	log.error("[Invoke ID: {}] リクエストボディが不正のため、処理をスキップします。", context.getAwsRequestId());
             }
         }
 
         // 処理結果を返す
-        context.getLogger().log("SQS内の全てのレコードの処理を完了しました。");
+    	log.info("[Invoke ID: {}] SQS内の全てのレコードの処理を完了しました。", context.getAwsRequestId());
         return "process complete.";
     }
 }

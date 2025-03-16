@@ -8,6 +8,7 @@ import copel.sesproductpackage.register.entity.DBConnection;
 import copel.sesproductpackage.register.entity.SES_AI_T_PERSON;
 import copel.sesproductpackage.register.unit.OpenAI;
 import copel.sesproductpackage.register.unit.OriginalDateTime;
+import lombok.extern.slf4j.Slf4j;
 /**
  * 【SES_AI_API_001】
  * 要員情報を保存するAPI
@@ -15,6 +16,7 @@ import copel.sesproductpackage.register.unit.OriginalDateTime;
  * @author 鈴木一矢
  *
  */
+@Slf4j
 public class SES_AI_API_001 extends ApiBase {
     // ================================================
     // 定数
@@ -54,15 +56,15 @@ public class SES_AI_API_001 extends ApiBase {
 
             OPEN_AI_API_KEY = System.getenv("OPEN_AI_API_KEY");
             if (OPEN_AI_API_KEY == null) {
-                System.out.println("[WARN] OPEN_AI_API_KEY が設定されていません。APIの呼び出しができません。");
+            	log.warn("OPEN_AI_API_KEY が設定されていません。APIの呼び出しができません。");
             }
         } catch (NumberFormatException e) {
-            System.out.println("[ERROR] 環境変数の値が不正です。デフォルト値を使用します。");
+        	log.error("環境変数の値が不正です。デフォルト値を使用します。");
             e.printStackTrace();
             SES_AI_T_PERSON_TTL = SES_AI_T_PERSON_TTL_DEFAULT;
             SES_AI_T_PERSON_SIMILARITY_THRESHOLD = SES_AI_T_PERSON_SIMILARITY_THRESHOLD_DEFAULT;
         } catch (Exception e) {
-            System.out.println("[ERROR] SES_AI_API_001 の環境変数読み込み中にエラーが発生しました。");
+        	log.error("SES_AI_API_001 の環境変数読み込み中にエラーが発生しました。");
             e.printStackTrace();
         }
     }
@@ -90,16 +92,21 @@ public class SES_AI_API_001 extends ApiBase {
      * ファイルID.
      */
     private String fileId;
+    /**
+     * invoke_id.
+     */
+    private String invokeId;
 
     /**
      * コンストラクタ.
      */
-    public SES_AI_API_001(final RequestObject requestObject) {
+    public SES_AI_API_001(final RequestObject requestObject, final String invokeId) {
         this.fromGroup = requestObject != null ? requestObject.getFromGroup() : null;
         this.fromId = requestObject != null ? requestObject.getFromId() : null;
         this.fromName = requestObject != null ? requestObject.getFromName() : null;
         this.rawContent = requestObject != null ? (requestObject.getRawContent() != null ? requestObject.getRawContent().toString() : null) : null;
         this.fileId = requestObject != null ? requestObject.getFileId() : null;
+        this.invokeId = invokeId;
     }
 
     // ================================================
@@ -130,14 +137,15 @@ public class SES_AI_API_001 extends ApiBase {
                 SES_AI_T_PERSON.embedding(client);
                 SES_AI_T_PERSON.insert(connection);
                 connection.commit();
-                this.resultMessage = "DBへの登録に成功しました。";
+            	log.info("[Invoke ID: {}] SES_AI_T_PERSONに要員情報を登録しました。", this.invokeId);
             } else {
-                this.resultMessage = "類似するレコードが存在するため、DBへの登録を行いませんでした。";
+            	log.info("[Invoke ID: {}] 類似するレコードが存在するため、DBへの登録を行いませんでした。", this.invokeId);
             }
 
             // 処理を終了する
             connection.close();
             this.resultStatus = 200;
+            this.resultMessage = "DBへの登録に成功しました。";
         } catch (ClassNotFoundException | SQLException | IOException | RuntimeException e) {
             e.printStackTrace();
             try {
@@ -146,6 +154,7 @@ public class SES_AI_API_001 extends ApiBase {
             } catch (SQLException e1) {
                 e1.printStackTrace();
             }
+        	log.error("[Invoke ID: {}] DBへの登録中にエラーが発生したため、登録処理は行われませんでした。", this.invokeId);
             this.resultStatus = 500;
             this.resultMessage = "DBへの登録に失敗しました。";
         }

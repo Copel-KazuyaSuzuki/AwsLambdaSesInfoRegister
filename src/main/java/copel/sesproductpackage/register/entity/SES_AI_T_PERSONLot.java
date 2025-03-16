@@ -25,19 +25,19 @@ public class SES_AI_T_PERSONLot implements Iterable<SES_AI_T_PERSON> {
     /**
      * ベクトル検索SQL.
      */
-    private final static String RETRIEVE_SQL = "SELECT from_group, from_id, from_name, raw_content, file_id, register_date, register_user, ttl, vector_data <=> ?::vector AS distance FROM SES_AI_T_PERSON ORDER BY distance LIMIT ?";
+    private final static String RETRIEVE_SQL = "SELECT person_id, from_group, from_id, from_name, raw_content, file_id, register_date, register_user, ttl, vector_data <=> ?::vector AS distance FROM SES_AI_T_PERSON ORDER BY distance LIMIT ?";
     /**
      * 全文検索SQL.
      */
-    private final static String SELECT_LIKE_SQL = "SELECT from_group, from_id, from_name, raw_content, file_id, vector_data, register_date, register_user, ttl FROM SES_AI_T_PERSON WHERE raw_content LIKE ?";
+    private final static String SELECT_LIKE_SQL = "SELECT person_id, from_group, from_id, from_name, raw_content, file_id, vector_data, register_date, register_user, ttl FROM SES_AI_T_PERSON WHERE raw_content LIKE ?";
     /**
      * 検索SQL.
      */
-    private final static String SELECT_SQL = "SELECT from_group, from_id, from_name, raw_content, file_id, vector_data, register_date, register_user, ttl FROM SES_AI_T_PERSON WHERE ";
+    private final static String SELECT_SQL = "SELECT person_id, from_group, from_id, from_name, raw_content, file_id, vector_data, register_date, register_user, ttl FROM SES_AI_T_PERSON WHERE ";
     /**
      * 検索SQL(指定時間以降検索).
      */
-    private final static String SELECT_SQL_BY_REGISTER_DATE = "SELECT from_group, from_id, from_name, raw_content, file_id, vector_data, register_date, register_user, ttl FROM SES_AI_T_PERSON register_date >= ?";
+    private final static String SELECT_SQL_BY_REGISTER_DATE = "SELECT person_id, from_group, from_id, from_name, raw_content, file_id, vector_data, register_date, register_user, ttl FROM SES_AI_T_PERSON register_date >= ?";
 
     /**
      * SES_AI_T_PERSONを複数持つLot.
@@ -63,11 +63,11 @@ public class SES_AI_T_PERSONLot implements Iterable<SES_AI_T_PERSON> {
         PreparedStatement preparedStatement = connection.prepareStatement(RETRIEVE_SQL);
         preparedStatement.setString(1, query == null ? null : query.toString());
         preparedStatement.setInt(2, limit);
-        System.out.println("[DEBUG] " + preparedStatement.toString());
         ResultSet resultSet = preparedStatement.executeQuery();
         this.entityLot = new ArrayList<SES_AI_T_PERSON>();
         while (resultSet.next()) {
             SES_AI_T_PERSON SES_AI_T_PERSON = new SES_AI_T_PERSON();
+            SES_AI_T_PERSON.setPersonId(resultSet.getString("person_id"));
             SES_AI_T_PERSON.setFromGroup(resultSet.getString("from_group"));
             SES_AI_T_PERSON.setFromId(resultSet.getString("from_id"));
             SES_AI_T_PERSON.setFromName(resultSet.getString("from_name"));
@@ -92,16 +92,15 @@ public class SES_AI_T_PERSONLot implements Iterable<SES_AI_T_PERSON> {
         this.entityLot = new ArrayList<SES_AI_T_PERSON>();
         PreparedStatement preparedStatement = connection.prepareStatement(SELECT_LIKE_SQL);
         preparedStatement.setString(1, "%" + query + "%"); // ワイルドカードをつける
-        System.out.println("[DEBUG] " + preparedStatement.toString());
         ResultSet resultSet = preparedStatement.executeQuery();
         while (resultSet.next()) {
             SES_AI_T_PERSON SES_AI_T_PERSON = new SES_AI_T_PERSON();
+            SES_AI_T_PERSON.setPersonId(resultSet.getString("person_id"));
             SES_AI_T_PERSON.setFromGroup(resultSet.getString("from_group"));
             SES_AI_T_PERSON.setFromId(resultSet.getString("from_id"));
             SES_AI_T_PERSON.setFromName(resultSet.getString("from_name"));
             SES_AI_T_PERSON.setFileId(resultSet.getString("file_id"));
             SES_AI_T_PERSON.setRawContent(resultSet.getString("raw_content"));
-//            SES_AI_T_PERSON.setVectorData(new Vector(resultSet.getString("vector_data")));
             SES_AI_T_PERSON.setRegisterDate(new OriginalDateTime(resultSet.getString("register_date")));
             SES_AI_T_PERSON.setRegisterUser(resultSet.getString("register_user"));
             SES_AI_T_PERSON.setTtl(new OriginalDateTime(resultSet.getString("ttl")));
@@ -135,13 +134,13 @@ public class SES_AI_T_PERSONLot implements Iterable<SES_AI_T_PERSON> {
                 }
             }
         }
-        System.out.println("[DEBUG] " + preparedStatement.toString());
 
         // 検索を実行する
         this.entityLot = new ArrayList<SES_AI_T_PERSON>();
         ResultSet resultSet = preparedStatement.executeQuery();
         while (resultSet.next()) {
             SES_AI_T_PERSON SES_AI_T_PERSON = new SES_AI_T_PERSON();
+            SES_AI_T_PERSON.setPersonId(resultSet.getString("person_id"));
             SES_AI_T_PERSON.setFromGroup(resultSet.getString("from_group"));
             SES_AI_T_PERSON.setFromId(resultSet.getString("from_id"));
             SES_AI_T_PERSON.setFromName(resultSet.getString("from_name"));
@@ -180,13 +179,13 @@ public class SES_AI_T_PERSONLot implements Iterable<SES_AI_T_PERSON> {
             preparedStatement.setString(i, andQuery.get(columnName));
             i++;
         }
-        System.out.println("[DEBUG] " + preparedStatement.toString());
 
         // 検索を実行する
         this.entityLot = new ArrayList<SES_AI_T_PERSON>();
         ResultSet resultSet = preparedStatement.executeQuery();
         while (resultSet.next()) {
             SES_AI_T_PERSON SES_AI_T_PERSON = new SES_AI_T_PERSON();
+            SES_AI_T_PERSON.setPersonId(resultSet.getString("person_id"));
             SES_AI_T_PERSON.setFromGroup(resultSet.getString("from_group"));
             SES_AI_T_PERSON.setFromId(resultSet.getString("from_id"));
             SES_AI_T_PERSON.setFromName(resultSet.getString("from_name"));
@@ -225,13 +224,13 @@ public class SES_AI_T_PERSONLot implements Iterable<SES_AI_T_PERSON> {
             preparedStatement.setString(i, orQuery.get(columnName));
             i++;
         }
-        System.out.println("[DEBUG] " + preparedStatement.toString());
 
         // 検索を実行する
         this.entityLot = new ArrayList<SES_AI_T_PERSON>();
         ResultSet resultSet = preparedStatement.executeQuery();
         while (resultSet.next()) {
             SES_AI_T_PERSON SES_AI_T_PERSON = new SES_AI_T_PERSON();
+            SES_AI_T_PERSON.setPersonId(resultSet.getString("person_id"));
             SES_AI_T_PERSON.setFromGroup(resultSet.getString("from_group"));
             SES_AI_T_PERSON.setFromId(resultSet.getString("from_id"));
             SES_AI_T_PERSON.setFromName(resultSet.getString("from_name"));
@@ -255,13 +254,13 @@ public class SES_AI_T_PERSONLot implements Iterable<SES_AI_T_PERSON> {
         // 検索条件を追加する
         PreparedStatement preparedStatement = connection.prepareStatement(SELECT_SQL_BY_REGISTER_DATE);
         preparedStatement.setString(1, fromDate != null ? fromDate.toString() : new OriginalDateTime().toString());
-        System.out.println("[DEBUG] " + preparedStatement.toString());
 
         // 検索を実行する
         this.entityLot = new ArrayList<SES_AI_T_PERSON>();
         ResultSet resultSet = preparedStatement.executeQuery();
         while (resultSet.next()) {
             SES_AI_T_PERSON SES_AI_T_PERSON = new SES_AI_T_PERSON();
+            SES_AI_T_PERSON.setPersonId(resultSet.getString("person_id"));
             SES_AI_T_PERSON.setFromGroup(resultSet.getString("from_group"));
             SES_AI_T_PERSON.setFromId(resultSet.getString("from_id"));
             SES_AI_T_PERSON.setFromName(resultSet.getString("from_name"));

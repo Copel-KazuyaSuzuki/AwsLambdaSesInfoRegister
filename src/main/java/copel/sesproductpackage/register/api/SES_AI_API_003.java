@@ -6,6 +6,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.amazonaws.SdkClientException;
+
 import copel.sesproductpackage.register.entity.DBConnection;
 import copel.sesproductpackage.register.entity.SES_AI_T_PERSON;
 import copel.sesproductpackage.register.entity.SES_AI_T_PERSONLot;
@@ -16,6 +18,7 @@ import copel.sesproductpackage.register.unit.SkillSheet;
 import copel.sesproductpackage.register.unit.Transformer;
 import copel.sesproductpackage.register.unit.aws.Region;
 import copel.sesproductpackage.register.unit.aws.S3;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 【SES_AI_API_003】
@@ -24,6 +27,7 @@ import copel.sesproductpackage.register.unit.aws.S3;
  * @author 鈴木一矢
  *
  */
+@Slf4j
 public class SES_AI_API_003 extends ApiBase {
     // ================================================
     // 定数
@@ -75,27 +79,27 @@ public class SES_AI_API_003 extends ApiBase {
 
             OPEN_AI_API_KEY = System.getenv("OPEN_AI_API_KEY");
             if (OPEN_AI_API_KEY == null) {
-                System.out.println("[WARN ] OPEN_AI_API_KEY が設定されていません。APIの呼び出しができません。");
+            	log.warn("OPEN_AI_API_KEY が設定されていません。APIの呼び出しができません。");
             }
             AWS_ACCESS_KEY_ID = System.getenv("AWS_ACCESS_KEY_ID");
             if (AWS_ACCESS_KEY_ID == null) {
-                System.out.println("[WARN ] AWS_ACCESS_KEY_ID が設定されていません。APIの呼び出しができません。");
+            	log.warn("AWS_ACCESS_KEY_ID が設定されていません。APIの呼び出しができません。");
             }
             AWS_SECRET_ACCESS_KEY = System.getenv("AWS_SECRET_ACCESS_KEY");
             if (AWS_SECRET_ACCESS_KEY == null) {
-                System.out.println("[WARN ] AWS_SECRET_ACCESS_KEY が設定されていません。APIの呼び出しができません。");
+            	log.warn("AWS_SECRET_ACCESS_KEY が設定されていません。APIの呼び出しができません。");
             }
             S3_BUCKET_NAME = System.getenv("S3_BUCKET_NAME");
             if (S3_BUCKET_NAME == null) {
-                System.out.println("[WARN ] S3_BUCKET_NAME が設定されていません。APIの呼び出しができません。");
+            	log.warn("S3_BUCKET_NAME が設定されていません。APIの呼び出しができません。");
             }
         } catch (NumberFormatException e) {
-            System.out.println("[ERROR] 環境変数の値が不正です。デフォルト値を使用します。");
+        	log.error("環境変数の値が不正です。デフォルト値を使用します。");
             e.printStackTrace();
             SES_AI_T_SKILLSHEET_TTL = SES_AI_T_SKILLSHEET_TTL_DEFAULT;
             SES_AI_T_SKILLSHEET_SIMILARITY_THRESHOLD = SES_AI_T_SKILLSHEET_SIMILARITY_THRESHOLD_DEFAULT;
         } catch (Exception e) {
-            System.out.println("[ERROR] SES_AI_API_003 の環境変数読み込み中にエラーが発生しました。");
+        	log.error("SES_AI_API_001 の環境変数読み込み中にエラーが発生しました。");
             e.printStackTrace();
         }
     }
@@ -127,17 +131,22 @@ public class SES_AI_API_003 extends ApiBase {
      * ファイル内容.
      */
     private byte[] fileData;
+    /**
+     * invoke_id.
+     */
+    private String invokeId;
 
     /**
      * コンストラクタ.
      */
-    public SES_AI_API_003(final RequestObject requestObject) {
+    public SES_AI_API_003(final RequestObject requestObject, final String invokeId) {
         this.fromGroup = requestObject != null ? requestObject.getFromGroup() : null;
         this.fromId = requestObject != null ? requestObject.getFromId() : null;
         this.fromName = requestObject != null ? requestObject.getFromName() : null;
         this.fileId = requestObject != null ? requestObject.getFileId() : null;
         this.fileName = requestObject != null ? requestObject.getFileName() : null;
         this.fileData = requestObject != null ? requestObject.getFileData() : null;
+        this.invokeId = invokeId;
         this.resultMessage = "";
     }
 
@@ -175,7 +184,8 @@ public class SES_AI_API_003 extends ApiBase {
                 try {
                     skillSheet.generateSummary(transformer);
                 } catch (RuntimeException e) {
-                    this.resultMessage += "要約の生成に失敗したため、要約部分は空のままデータを登録しました。";
+                	e.printStackTrace();
+                	log.info("[Invoke ID: {}] 要約の生成に失敗したため、要約部分は空のままデータを登録します。", this.invokeId);
                 }
                 SES_AI_T_SKILLSHEET.setSkillSheet(skillSheet);
 
@@ -183,18 +193,23 @@ public class SES_AI_API_003 extends ApiBase {
                 SES_AI_T_SKILLSHEET.embedding(transformer);
                 SES_AI_T_SKILLSHEET.insert(connection);
                 connection.commit();
-                connection.close();
-                this.resultMessage += "DBへの登録に成功しました。";
+            	log.info("[Invoke ID: {}] SES_AI_T_SKILLSHEETにスキルシート情報を登録しました。", this.invokeId);
 
                 // S3にファイルを保存する
-                S3 s3 = new S3(AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, Region.東京);
-                s3.setBucketName(S3_BUCKET_NAME);
-                s3.setBucketFilePath(this.fileId + "_" + this.fileName);
-                s3.setData(this.fileData);
-                s3.save();
+                try {
+                    S3 s3 = new S3(AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, Region.東京);
+                    s3.setBucketName(S3_BUCKET_NAME);
+                    s3.setBucketFilePath(this.fileId + "_" + this.fileName);
+                    s3.setData(this.fileData);
+                    s3.save();
+                	log.info("[Invoke ID: {}] S3へのファイルの登録しに成功しました。", this.invokeId);
+                } catch (SdkClientException e) {
+                	log.warn("[Invoke ID: {}] S3へのファイルの登録しに失敗したため、DBへの登録処理のみ行いました。", this.invokeId);
+                }
 
                 // 要員情報と紐づける処理
                 // 現在時刻の3分前以降に登録された要員情報テーブルのレコードを全て取得する.
+            	log.info("[Invoke ID: {}] 要員情報テーブルの情報との紐づけ処理を開始します。", this.invokeId);
                 SES_AI_T_PERSONLot SES_AI_T_PERSONLot = new SES_AI_T_PERSONLot();
                 OriginalDateTime now = new OriginalDateTime();
                 now.minusMinutes(3);
@@ -209,15 +224,21 @@ public class SES_AI_API_003 extends ApiBase {
                 }
                 // 1件に絞りこむことができた場合、そのレコードにskillsheet_idを追加する
                 if (targetList.size() == 1) {
+                	log.info("[Invoke ID: {}] 紐づけられるレコードが1件見つかったため、紐づけ処理します。", this.invokeId);
                     SES_AI_T_PERSON targetEntity = targetList.get(0);
+                	log.info("[Invoke ID: {}] 要員ID：{}", this.invokeId, targetEntity.getPersonId());
                     targetEntity.setFileId(this.fileId);
                     // UPDATE処理
+                	targetEntity.updateByPk(connection);
+                	log.info("[Invoke ID: {}] SES_AI_T_PERSONテーブルを更新し、要員情報とスキルシートの紐づけに成功しました。", this.invokeId);
                 }
+                connection.commit();
             } else {
                 connection.close();
-                this.resultMessage += "類似するレコードが存在するため、DBへの登録を行いませんでした。";
+            	log.info("[Invoke ID: {}] 類似するレコードが存在するため、DBへの登録を行いませんでした。", this.invokeId);
             }
 
+            connection.close();
             this.resultStatus = 200;
         } catch (ClassNotFoundException | SQLException | IOException | RuntimeException e) {
             e.printStackTrace();
@@ -227,6 +248,7 @@ public class SES_AI_API_003 extends ApiBase {
             } catch (SQLException e1) {
                 e1.printStackTrace();
             }
+        	log.error("[Invoke ID: {}] DBまたはS3への登録中にエラーが発生したため、処理を中断します。", this.invokeId);
             this.resultStatus = 500;
             this.resultMessage += "DBへの登録に失敗しました。";
         }

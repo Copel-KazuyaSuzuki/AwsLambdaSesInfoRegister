@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.UUID;
 
 import copel.sesproductpackage.register.unit.OriginalDateTime;
 import copel.sesproductpackage.register.unit.Transformer;
@@ -21,12 +22,20 @@ public class SES_AI_T_JOB {
     /**
      * INSERTR文.
      */
-    private final static String INSERT_SQL = "INSERT INTO SES_AI_T_JOB (from_group, from_id, from_name, raw_content, vector_data, register_date, register_user, ttl) VALUES (?, ?, ?, ?, ?::vector, ?, ?, ?)";
+    private final static String INSERT_SQL = "INSERT INTO SES_AI_T_JOB (job_id, from_group, from_id, from_name, raw_content, vector_data, register_date, register_user, ttl) VALUES (?, ?, ?, ?, ?, ?::vector, ?, ?, ?)";
+    /**
+     * SELECT文.
+     */
+    private final static String SELECT_SQL = "SELECT job_id, from_group, from_id, from_name, raw_content, vector_data, register_date, register_user, ttl FROM SES_AI_T_JOB WHERE job_id = ?";
     /**
      * 重複チェック用SQL.
      */
     private final static String CHECK_SQL = "SELECT COUNT(*) FROM SES_AI_T_JOB WHERE raw_content % ? AND similarity(raw_content, ?) > ?";
 
+    /**
+     * 案件ID(PK).
+     */
+    private String jobId;
     /**
      * 送信元グループ.
      */
@@ -74,16 +83,20 @@ public class SES_AI_T_JOB {
         if (connection == null) {
             return 0;
         }
+
+        // 案件IDを発行
+        this.jobId = UUID.randomUUID().toString().replace("-", "").substring(0, 10);
+
         PreparedStatement preparedStatement = connection.prepareStatement(INSERT_SQL);
-        preparedStatement.setString(1, this.fromGroup);
-        preparedStatement.setString(2, this.fromId);
-        preparedStatement.setString(3, this.fromName);
-        preparedStatement.setString(4, this.rawContent);
-        preparedStatement.setString(5, this.vectorData == null ? null : this.vectorData.toString());
-        preparedStatement.setTimestamp(6, this.registerDate == null ? null : this.registerDate.toTimestamp());
-        preparedStatement.setString(7, this.registerUser);
-        preparedStatement.setTimestamp(8, this.ttl == null ? null : this.ttl.toTimestamp());
-        System.out.println("[DEBUG] " + preparedStatement.toString());
+        preparedStatement.setString(1, this.jobId);
+        preparedStatement.setString(2, this.fromGroup);
+        preparedStatement.setString(3, this.fromId);
+        preparedStatement.setString(4, this.fromName);
+        preparedStatement.setString(5, this.rawContent);
+        preparedStatement.setString(6, this.vectorData == null ? null : this.vectorData.toString());
+        preparedStatement.setTimestamp(7, this.registerDate == null ? null : this.registerDate.toTimestamp());
+        preparedStatement.setString(8, this.registerUser);
+        preparedStatement.setTimestamp(9, this.ttl == null ? null : this.ttl.toTimestamp());
         return preparedStatement.executeUpdate();
     }
 
@@ -113,21 +126,43 @@ public class SES_AI_T_JOB {
         preparedStatement.setString(1, this.rawContent);
         preparedStatement.setString(2, this.rawContent);
         preparedStatement.setDouble(3, similarityThreshold);
-        System.out.println("[DEBUG] " + preparedStatement.toString());
         ResultSet resultSet = preparedStatement.executeQuery();
         resultSet.next();
         return resultSet.getInt(1) < 1;
     }
 
+    /**
+     * このオブジェクトに格納されているPKをキーにレコードを1件SELECTしこのオブジェクトに持ちます.
+     *
+     * @param connection DBコネクション
+     * @throws SQLException
+     */
+    public void selectByPk(final Connection connection) throws SQLException {
+        if (connection == null || this.jobId == null) {
+            return;
+        }
+        PreparedStatement preparedStatement = connection.prepareStatement(SELECT_SQL);
+        preparedStatement.setString(1, this.jobId);
+        ResultSet resultSet = preparedStatement.executeQuery();
+        this.fromGroup = resultSet.getString("from_group");
+        this.fromId = resultSet.getString("from_id");
+        this.fromName = resultSet.getString("from_name");
+        this.rawContent = resultSet.getString("raw_content");
+        this.registerDate = new OriginalDateTime(resultSet.getString("register_date"));
+        this.registerUser = resultSet.getString("register_user");
+        this.ttl = new OriginalDateTime(resultSet.getString("ttl"));
+    }
+
     @Override
     public String toString() {
         return "{\n fromGroup: " + this.fromGroup
-                + "\n fromId: " + this.fromId
-                + "\n fromName: " + this.fromName
-                + "\n rawContent: " + this.rawContent
-                + "\n vectorData: " + this.vectorData
-                + "\n registerDate: " + this.registerDate
-                + "\n registerUser: " + this.registerUser
+                + "\n job_id: " + this.jobId
+                + "\n from_id: " + this.fromId
+                + "\n from_name: " + this.fromName
+                + "\n raw_content: " + this.rawContent
+                + "\n vector_data: " + this.vectorData
+                + "\n register_date: " + this.registerDate
+                + "\n register_user: " + this.registerUser
                 + "\n ttl: " + this.ttl
                 + "\n distance: " + this.distance
                 + "\n}";
@@ -136,10 +171,16 @@ public class SES_AI_T_JOB {
     // ================================
     // Getter / Setter
     // ================================
+    public String getJobId() {
+		return jobId;
+	}
+	public void setJobId(String jobId) {
+		this.jobId = jobId;
+	}
     public String getFromGroup() {
         return fromGroup;
     }
-    public void setFromGroup(String fromGroup) {
+	public void setFromGroup(String fromGroup) {
         this.fromGroup = fromGroup;
     }
     public String getFromId() {

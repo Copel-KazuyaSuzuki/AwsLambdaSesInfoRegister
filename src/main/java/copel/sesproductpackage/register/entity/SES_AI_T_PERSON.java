@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.UUID;
 
 import copel.sesproductpackage.register.unit.OriginalDateTime;
 import copel.sesproductpackage.register.unit.Transformer;
@@ -21,16 +22,24 @@ public class SES_AI_T_PERSON {
     /**
      * INSERTR文.
      */
-    private final static String INSERT_SQL = "INSERT INTO SES_AI_T_PERSON (from_group, from_id, from_name, raw_content, file_id, vector_data, register_date, register_user, ttl) VALUES (?, ?, ?, ?, ?, ?::vector, ?, ?, ?)";
+    private final static String INSERT_SQL = "INSERT INTO SES_AI_T_PERSON (person_id, from_group, from_id, from_name, raw_content, file_id, vector_data, register_date, register_user, ttl) VALUES (?, ?, ?, ?, ?, ?, ?::vector, ?, ?, ?)";
+    /**
+     * SELECT文.
+     */
+    private final static String SELECT_SQL = "SELECT person_id, from_group, from_id, from_name, raw_content, file_id, vector_data, register_date, register_user, ttl FROM SES_AI_T_PERSON WHERE person_id = ?";
     /**
      * UPDATE文.
      */
-    private final static String UPDATE_SQL = "UPDATE SES_AI_T_PERSON SET from_group = ?, from_id = ?, from_name = ?, raw_content = ?, file_id = ?, vector_data = ?::vector, ttl = ? WHERE ";
+    private final static String UPDATE_SQL = "UPDATE SES_AI_T_PERSON SET from_group = ?, from_id = ?, from_name = ?, raw_content = ?, file_id = ?, vector_data = ?::vector, ttl = ? WHERE person_id = ?";
     /**
      * 重複チェック用SQL.
      */
     private final static String CHECK_SQL = "SELECT COUNT(*) FROM SES_AI_T_PERSON WHERE raw_content % ? AND similarity(raw_content, ?) > ?";
 
+    /**
+     * 要員ID(PK).
+     */
+    private String personId;
     /**
      * 送信元グループ.
      */
@@ -95,23 +104,34 @@ public class SES_AI_T_PERSON {
         if (connection == null) {
             return 0;
         }
+
+        // 要員IDを発行
+        this.personId = UUID.randomUUID().toString().replace("-", "").substring(0, 10);
+
         PreparedStatement preparedStatement = connection.prepareStatement(INSERT_SQL);
-        preparedStatement.setString(1, this.fromGroup);
-        preparedStatement.setString(2, this.fromId);
-        preparedStatement.setString(3, this.fromName);
-        preparedStatement.setString(4, this.rawContent);
-        preparedStatement.setString(5, this.fileId);
-        preparedStatement.setString(6, this.vectorData == null ? null : this.vectorData.toString());
-        preparedStatement.setTimestamp(7, this.registerDate == null ? null : this.registerDate.toTimestamp());
-        preparedStatement.setString(8, this.registerUser);
-        preparedStatement.setTimestamp(9, this.ttl == null ? null : this.ttl.toTimestamp());
-        System.out.println("[DEBUG] " + preparedStatement.toString());
+        preparedStatement.setString(1, this.personId);
+        preparedStatement.setString(2, this.fromGroup);
+        preparedStatement.setString(3, this.fromId);
+        preparedStatement.setString(4, this.fromName);
+        preparedStatement.setString(5, this.rawContent);
+        preparedStatement.setString(6, this.fileId);
+        preparedStatement.setString(7, this.vectorData == null ? null : this.vectorData.toString());
+        preparedStatement.setTimestamp(8, this.registerDate == null ? null : this.registerDate.toTimestamp());
+        preparedStatement.setString(9, this.registerUser);
+        preparedStatement.setTimestamp(10, this.ttl == null ? null : this.ttl.toTimestamp());
         return preparedStatement.executeUpdate();
     }
 
-    public int update(final Connection connection, final String key) throws SQLException {
-        if (connection == null) {
-            return 0;
+    /**
+     * UPDATE処理を実行します.
+     *
+     * @param connection DBコネクション
+     * @return 成功 or 失敗
+     * @throws SQLException
+     */
+    public boolean updateByPk(final Connection connection) throws SQLException {
+        if (connection == null || this.personId == null) {
+            return false;
         }
         PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_SQL);
         preparedStatement.setString(1, this.fromGroup);
@@ -121,8 +141,8 @@ public class SES_AI_T_PERSON {
         preparedStatement.setString(5, this.fileId);
         preparedStatement.setString(6, this.vectorData == null ? null : this.vectorData.toString());
         preparedStatement.setTimestamp(7, this.ttl == null ? null : this.ttl.toTimestamp());
-        System.out.println("[DEBUG] " + preparedStatement.toString());
-        return preparedStatement.executeUpdate();
+        preparedStatement.setString(8, this.personId);
+        return preparedStatement.executeUpdate() > 0;
     }
 
     /**
@@ -151,10 +171,32 @@ public class SES_AI_T_PERSON {
         preparedStatement.setString(1, this.rawContent);
         preparedStatement.setString(2, this.rawContent);
         preparedStatement.setDouble(3, similarityThreshold);
-        System.out.println("[DEBUG] " + preparedStatement.toString());
         ResultSet resultSet = preparedStatement.executeQuery();
         resultSet.next();
         return resultSet.getInt(1) < 1;
+    }
+
+    /**
+     * このオブジェクトに格納されているPKをキーにレコードを1件SELECTしこのオブジェクトに持ちます.
+     *
+     * @param connection DBコネクション
+     * @throws SQLException
+     */
+    public void selectByPk(final Connection connection) throws SQLException {
+        if (connection == null || this.personId == null) {
+            return;
+        }
+        PreparedStatement preparedStatement = connection.prepareStatement(SELECT_SQL);
+        preparedStatement.setString(1, this.personId);
+        ResultSet resultSet = preparedStatement.executeQuery();
+        this.fromGroup = resultSet.getString("from_group");
+        this.fromId = resultSet.getString("from_id");
+        this.fromName = resultSet.getString("from_name");
+        this.rawContent = resultSet.getString("raw_content");
+        this.fileId = resultSet.getString("file_id");
+        this.registerDate = new OriginalDateTime(resultSet.getString("register_date"));
+        this.registerUser = resultSet.getString("register_user");
+        this.ttl = new OriginalDateTime(resultSet.getString("ttl"));
     }
 
     @Override
@@ -175,10 +217,16 @@ public class SES_AI_T_PERSON {
     // ================================
     // Getter / Setter
     // ================================
+    public String getPersonId() {
+		return personId;
+	}
+	public void setPersonId(String personId) {
+		this.personId = personId;
+	}
     public String getFromGroup() {
         return fromGroup;
     }
-    public void setFromGroup(String fromGroup) {
+	public void setFromGroup(String fromGroup) {
         this.fromGroup = fromGroup;
     }
     public String getFromId() {

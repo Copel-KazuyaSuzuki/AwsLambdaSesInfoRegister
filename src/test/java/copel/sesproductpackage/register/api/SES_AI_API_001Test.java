@@ -52,7 +52,7 @@ class SES_AI_API_001Test {
 
     @Test
     void testPersonRegister_Success() throws SQLException, IOException {
-        api = new SES_AI_API_001(requestObject);
+        api = new SES_AI_API_001(requestObject, "dummy_invoke_id");
         
         when(mockPerson.uniqueCheck(any(Connection.class), anyDouble())).thenReturn(true);
         doNothing().when(mockPerson).embedding(any(OpenAI.class));
@@ -67,7 +67,7 @@ class SES_AI_API_001Test {
 
     @Test
     void testPersonRegister_DuplicateRecord() throws SQLException, IOException {
-        api = new SES_AI_API_001(requestObject);
+        api = new SES_AI_API_001(requestObject, "dummy_invoke_id");
         
         when(mockPerson.uniqueCheck(any(Connection.class), anyDouble())).thenReturn(false);
         
@@ -79,7 +79,7 @@ class SES_AI_API_001Test {
 
     @Test
     void testPersonRegister_SQLException() throws SQLException, IOException, ClassNotFoundException {
-        api = new SES_AI_API_001(requestObject);
+        api = new SES_AI_API_001(requestObject, "dummy_invoke_id");
         
         when(DBConnection.getConnection()).thenThrow(new SQLException("DB connection error"));
         

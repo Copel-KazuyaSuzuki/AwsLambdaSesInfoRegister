@@ -48,7 +48,7 @@ class SES_AI_API_002Test {
         when(mockRequestObject.getFromName()).thenReturn("testName");
         when(mockRequestObject.getRawContent()).thenReturn(new Content("testContent"));
         
-        api = new SES_AI_API_002(mockRequestObject);
+        api = new SES_AI_API_002(mockRequestObject, "dummy_invoke_id");
     }
     
     @Test
