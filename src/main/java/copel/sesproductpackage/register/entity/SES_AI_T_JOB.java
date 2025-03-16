@@ -113,6 +113,7 @@ public class SES_AI_T_JOB {
         preparedStatement.setString(1, this.rawContent);
         preparedStatement.setString(2, this.rawContent);
         preparedStatement.setDouble(3, similarityThreshold);
+        System.out.println("[DEBUG] " + preparedStatement.toString());
         ResultSet resultSet = preparedStatement.executeQuery();
         resultSet.next();
         return resultSet.getInt(1) < 1;

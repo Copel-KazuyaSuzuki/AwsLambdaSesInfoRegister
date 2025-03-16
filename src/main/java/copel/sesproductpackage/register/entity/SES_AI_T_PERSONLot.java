@@ -147,7 +147,6 @@ public class SES_AI_T_PERSONLot implements Iterable<SES_AI_T_PERSON> {
             SES_AI_T_PERSON.setFromName(resultSet.getString("from_name"));
             SES_AI_T_PERSON.setFileId(resultSet.getString("file_id"));
             SES_AI_T_PERSON.setRawContent(resultSet.getString("raw_content"));
-//            SES_AI_T_PERSON.setVectorData(new Vector(resultSet.getString("vector_data")));
             SES_AI_T_PERSON.setRegisterDate(new OriginalDateTime(resultSet.getString("register_date")));
             SES_AI_T_PERSON.setRegisterUser(resultSet.getString("register_user"));
             SES_AI_T_PERSON.setTtl(new OriginalDateTime(resultSet.getString("ttl")));

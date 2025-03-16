@@ -130,6 +130,7 @@ public class SES_AI_T_SKILLSHEET {
         preparedStatement.setString(1, this.skillSheet == null ? null : this.skillSheet.getFileContent());
         preparedStatement.setString(2, this.skillSheet == null ? null : this.skillSheet.getFileContent());
         preparedStatement.setDouble(3, similarityThreshold);
+        System.out.println("[DEBUG] " + preparedStatement.toString());
         ResultSet resultSet = preparedStatement.executeQuery();
         resultSet.next();
         return resultSet.getInt(1) < 1;

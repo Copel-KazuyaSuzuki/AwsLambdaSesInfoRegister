@@ -68,7 +68,6 @@ public class SES_AI_T_JOBLot implements Iterable<SES_AI_T_JOB> {
             SES_AI_T_JOB.setFromId(resultSet.getString("from_id"));
             SES_AI_T_JOB.setFromName(resultSet.getString("from_name"));
             SES_AI_T_JOB.setRawContent(resultSet.getString("raw_content"));
-//            SES_AI_T_JOB.setVectorData(new Vector(resultSet.getString("vector_data")));
             SES_AI_T_JOB.setRegisterDate(new OriginalDateTime(resultSet.getString("register_date")));
             SES_AI_T_JOB.setRegisterUser(resultSet.getString("register_user"));
             SES_AI_T_JOB.setTtl(new OriginalDateTime(resultSet.getString("ttl")));
@@ -96,7 +95,6 @@ public class SES_AI_T_JOBLot implements Iterable<SES_AI_T_JOB> {
             SES_AI_T_JOB.setFromId(resultSet.getString("from_id"));
             SES_AI_T_JOB.setFromName(resultSet.getString("from_name"));
             SES_AI_T_JOB.setRawContent(resultSet.getString("raw_content"));
-//            SES_AI_T_JOB.setVectorData(new Vector(resultSet.getString("vector_data")));
             SES_AI_T_JOB.setRegisterDate(new OriginalDateTime(resultSet.getString("register_date")));
             SES_AI_T_JOB.setRegisterUser(resultSet.getString("register_user"));
             SES_AI_T_JOB.setTtl(new OriginalDateTime(resultSet.getString("ttl")));
@@ -141,7 +139,6 @@ public class SES_AI_T_JOBLot implements Iterable<SES_AI_T_JOB> {
             SES_AI_T_JOB.setFromId(resultSet.getString("from_id"));
             SES_AI_T_JOB.setFromName(resultSet.getString("from_name"));
             SES_AI_T_JOB.setRawContent(resultSet.getString("raw_content"));
-//            SES_AI_T_JOB.setVectorData(new Vector(resultSet.getString("vector_data")));
             SES_AI_T_JOB.setRegisterDate(new OriginalDateTime(resultSet.getString("register_date")));
             SES_AI_T_JOB.setRegisterUser(resultSet.getString("register_user"));
             SES_AI_T_JOB.setTtl(new OriginalDateTime(resultSet.getString("ttl")));
@@ -186,7 +183,6 @@ public class SES_AI_T_JOBLot implements Iterable<SES_AI_T_JOB> {
             SES_AI_T_JOB.setFromId(resultSet.getString("from_id"));
             SES_AI_T_JOB.setFromName(resultSet.getString("from_name"));
             SES_AI_T_JOB.setRawContent(resultSet.getString("raw_content"));
-//            SES_AI_T_JOB.setVectorData(new Vector(resultSet.getString("vector_data")));
             SES_AI_T_JOB.setRegisterDate(new OriginalDateTime(resultSet.getString("register_date")));
             SES_AI_T_JOB.setRegisterUser(resultSet.getString("register_user"));
             SES_AI_T_JOB.setTtl(new OriginalDateTime(resultSet.getString("ttl")));
@@ -231,7 +227,6 @@ public class SES_AI_T_JOBLot implements Iterable<SES_AI_T_JOB> {
             SES_AI_T_JOB.setFromId(resultSet.getString("from_id"));
             SES_AI_T_JOB.setFromName(resultSet.getString("from_name"));
             SES_AI_T_JOB.setRawContent(resultSet.getString("raw_content"));
-//            SES_AI_T_JOB.setVectorData(new Vector(resultSet.getString("vector_data")));
             SES_AI_T_JOB.setRegisterDate(new OriginalDateTime(resultSet.getString("register_date")));
             SES_AI_T_JOB.setRegisterUser(resultSet.getString("register_user"));
             SES_AI_T_JOB.setTtl(new OriginalDateTime(resultSet.getString("ttl")));
